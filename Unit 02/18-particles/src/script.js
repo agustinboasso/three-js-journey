@@ -30,16 +30,28 @@ const particleTexture = textureLoader.load('/textures/particles/2.png')
 //geometria
 const particlesGeometry = new THREE.BufferGeometry()
 
-const count = 50000
+const count = 200000
 
 const positions = new Float32Array(count * 3)
+
+//declarar los diferentes colres
+const colors = new Float32Array(count * 3)
+
+
 for(let i = 0; i < count * 3; i++){
     
-    positions[i] = (Math.random() - 0.5) * 10 
+    positions[i] = (Math.random() - 0.5) * 10
+    //agregar al loop los diferentes colores
+    colors[i] = (Math.random() - 0.5) * 10  
 }
 particlesGeometry.setAttribute(
     'position',
     new THREE.BufferAttribute(positions, 3)
+)
+//instanciar los diferentes colores
+particlesGeometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(colors, 3)
 )
 
 //material
@@ -47,12 +59,19 @@ particlesGeometry.setAttribute(
 const particlesMaterial = new THREE.PointsMaterial({
     size: 0.02,
     sizeAttenuation: true,  //perspectiva de la camar de las particulas
-    color: 0xff88cc,
+    //color: 0xff88cc,
     
 })
 
 particlesMaterial.transparent = true
 particlesMaterial.alphaMap =  particleTexture
+//particlesMaterial.alphaTest = 0.001
+//particlesMaterial.depthTest = false // esto solo funciona si las particulas no tienen otro color o si no queremos montar  una geometria en la escena....
+particlesMaterial.depthWrite = false
+
+particlesMaterial.blending = THREE.AdditiveBlending
+particlesMaterial.vertexColors = true //activar los diferentes colores
+
 
 //points
 
@@ -122,6 +141,17 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
+
+    //update particles
+
+    //particles.rotation.y = elapsedTime * 0.2
+
+    for (let i=0; i< count; i++){
+        const i3 = i * 3;
+        const x = particlesGeometry.attributes.position.array[i3 + 0]
+        particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+    }
+    particlesGeometry.attributes.position.needsUpdate = true
 
     // Update controls
     controls.update()
